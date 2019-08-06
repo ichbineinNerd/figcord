@@ -15,10 +15,6 @@ fs.access(process.env.FONTCACHEDIR, e => {
     }
 });
 
-const escapeRegex = function escapeRegex(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-}
-
 client.once('ready', () => {
     console.log('Ready!');
 });
@@ -237,17 +233,36 @@ const parseFigFont = function parseFigFont(data) {
 };
 
 const figlifyText = function figlifyText(text, font) {
-    const chars = text.split('').map(c => font[c] || font['default']);
     let output = '';
-    for (let i = 0; i < font.height; i++) {
-        for (let j = 0; j < chars.length; j++) {
-            output += chars[j][i];
+
+    let lineLen = 0;
+    let charsDone = 0;
+    while (charsDone !== text.length) {
+        for (let y = 0; y < font.height; y++) {
+            for (let x = 0; x < text.length; x++) {
+                lineLen += font[text[x]][y].length;
+                if (lineLen > process.env.FIGGEDTEXTWRAP) {
+                    lineLen -= font[text[x]][y].length;
+                    break;
+                }
+            
+                output += font[text[x]][y];
+                if (y === font.height - 1)
+                    charsDone++;
+            }
+            output += '\n';
+            lineLen = 0;
         }
-        output += '\n';
+        text = text.slice(charsDone);
+        charsDone = 0;
+        output += '\n\n';
     }
-    output = output.substr(0, output.length - 1);
     return output;
 };
+
+const splitMessage = function splitMessaage(message) {
+    return message.match(/[\s\S]{1,1950}/g);
+}
 
 const processCommand = function processCommand(message) {
     const noPrefix = message.content.substring(process.env.PREFIX.length);
@@ -259,14 +274,14 @@ const processCommand = function processCommand(message) {
             if (e)
                 message.channel.send('unfortunately, an error occured while trying to enlarge your text: ' + e);
             else
-                message.channel.send(`\`\`\`${figlifyText(arguments.join(' '), parseFigFont(d))}\`\`\``);
+                message.channel.send(splitMessage(figlifyText(arguments.join(' '), parseFigFont(d))).map(m => '```' + m + '```')).forEach(msg => message.channel.send(msg));
         });
     else if (command === (process.env.FIGLIFY_WITHFONT || 'enlarge-font'))
         accessFigFont(arguments[0], (d, e) => {
             if (e)
                 message.channel.send('unfortunately, an error occured while trying to enlarge your text: ' + e);
             else
-                message.channel.send(`\`\`\`${figlifyText(arguments.slice(1).join(' '), parseFigFont(d))}\`\`\``);
+                splitMessage(figlifyText(arguments.slice(1).join(' '), parseFigFont(d))).map(m => '```' + m + '```').forEach(msg => message.channel.send(msg));
         });
 
 };
