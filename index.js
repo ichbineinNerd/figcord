@@ -157,27 +157,37 @@ const parseFigFont = function parseFigFont(data) {
 
     let isInUnicode = false;
 
-    let charIndex = 32;
+    let charIndex = ' ';
     lines = lines.slice(numCommentLines + 1);
     while (lines.length > 1) {
         let thisChar = '';
         let ending = '';
         if (isInUnicode)
-            charIndex = -1;
+            charIndex = 'none';
         for (let charLine = 0; charLine < height; charLine++) {
             const l = lines[0];
             ending = l[l.length-1];
 
-            if (isInUnicode && charIndex === -1) {
+            if (isInUnicode && charIndex === 'none') {
                 charLine--;
                 const numStr = l.split(' ', 2)[0];
+                let tmp = -1;
                 if (numStr.toLowerCase().startsWith('0x')) {
-                    charIndex = parseInt(numStr.substr(2).toLowerCase(), 16);
+                    tmp = parseInt(numStr.substr(2).toLowerCase(), 16);
                 }else if (numStr.toLowerCase().startsWith('0')) {
-                    charIndex = parseInt(numStr.substr(1), 8);
+                    tmp = parseInt(numStr.substr(1), 8);
                 }else {
-                    charIndex = parseInt(numStr, 10);
+                    tmp = parseInt(numStr, 10);
                 }
+                if (tmp < 0)
+                    charIndex = 'none2';
+                if (tmp === 0) {
+                    charIndex = 'default';
+                }
+                else
+                    charIndex = String.fromCharCode(tmp);
+                lines = lines.slice(1);
+                continue;
             }
 
             if (charLine === height - 1) {
@@ -191,33 +201,46 @@ const parseFigFont = function parseFigFont(data) {
             }
             lines = lines.slice(1);
         }
-        chars[String.fromCharCode(charIndex)] = thisChar.split['\n'];
+        if (charIndex !== 'none2')
+            chars[charIndex] = thisChar.split('\n');
         if (!isInUnicode) {
-            if (charIndex < 126)
-                charIndex++;
-            else if (charIndex === 126)
-                charIndex = 196;
-            else if (charIndex === 196)
-                charIndex = 214;
-            else if (charIndex === 214)
-                charIndex = 220;
-            else if (charIndex === 220)
-                charIndex = 228;
-            else if (charIndex === 228)
-                charIndex = 246;
-            else if (charIndex === 246)
-                charIndex = 252;
-            else if (charIndex === 252)
-                charIndex = 223;
-            else if (charIndex === 223) {
+            if (charIndex.charCodeAt(0) < 126)
+                charIndex = String.fromCharCode(charIndex.charCodeAt(0) + 1);
+            else if (charIndex === '~')
+                charIndex = 'Ä';
+            else if (charIndex === 'Ä')
+                charIndex = 'Ö';
+            else if (charIndex === 'Ö')
+                charIndex = 'Ü';
+            else if (charIndex === 'Ü')
+                charIndex = 'ä';
+            else if (charIndex === 'ä')
+                charIndex = 'ö';
+            else if (charIndex === 'ö')
+                charIndex = 'ü';
+            else if (charIndex === 'ü')
+                charIndex = 'ß';
+            else if (charIndex === 'ß') {
                 isInUnicode = true;
             }
         }
     }
+
+    chars['height'] = height;
+    return chars;
 };
 
 const figlifyText = function figlifyText(text, font) {
-
+    const chars = text.split('').map(c => font[c] || font['default']);
+    let output = '';
+    for (let i = 0; i < font.height; i++) {
+        for (let j = 0; j < chars.length; j++) {
+            output += chars[j][i];
+        }
+        output += '\n';
+    }
+    output = output.substr(0, output.length - 1);
+    return output;
 };
 
 const processCommand = function processCommand(message) {
