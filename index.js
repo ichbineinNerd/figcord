@@ -50,6 +50,8 @@ const accessFigFont = function accessFigFont(name, callback) {
                 res.on('end', () => {
                     if (aborted)
                         return cb2(null, 'ERR_FILETOOLARGE');
+                    else if (!body.startsWith('flf2a'))
+                        return cb2(null, 'ERR_NOTAFONT');
                     else
                         return cb2(body, null);
                 })
@@ -249,7 +251,20 @@ const processCommand = function processCommand(message) {
     const arguments = noPrefix.split(' ').slice(1);
 
     if (command === (process.env.FIGLIFYSIMPLE || 'enlarge'))
-        message.channel.send(`\`\`\`${figlifyText(arguments.join(' '), 'standard')}\`\`\``);
+        accessFigFont('standard', (d, e) => {
+            if (e)
+                message.channel.send('unfortunately, an error occured while trying to enlarge your text: ' + e);
+            else
+                message.channel.send(`\`\`\`${figlifyText(arguments.join(' '), parseFigFont(d))}\`\`\``);
+        });
+    else if (command === (process.env.FIGLIFY_WITHFONT || 'enlarge-font'))
+        accessFigFont(arguments[0], (d, e) => {
+            if (e)
+                message.channel.send('unfortunately, an error occured while trying to enlarge your text: ' + e);
+            else
+                message.channel.send(`\`\`\`${figlifyText(arguments.slice(1).join(' '), parseFigFont(d))}\`\`\``);
+        });
+
 };
 
 client.on('message', m => {
