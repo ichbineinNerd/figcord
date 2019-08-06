@@ -11,7 +11,7 @@ const client = new Discord.Client();
 fs.access(process.env.FONTCACHEDIR, e => {
     if (e && e.code === 'ENOENT') {
         console.log('font cache dir does not exist, creating...');
-        fs.mkdir(process.env.FONTCACHEDIR);
+        fs.mkdir(process.env.FONTCACHEDIR, () => {});
     }
 });
 
