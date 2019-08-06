@@ -15,6 +15,10 @@ fs.access(process.env.FONTCACHEDIR, e => {
     }
 });
 
+const escapeRegex = function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
 client.once('ready', () => {
     console.log('Ready!');
 });
@@ -193,13 +197,13 @@ const parseFigFont = function parseFigFont(data) {
             }
 
             if (charLine === height - 1) {
-                thisChar += l.replace(new RegExp(hardBlank), ' ');
+                thisChar += l.replace(new RegExp(escapeRegex(hardBlank)), ' ');
                 if (thisChar.endsWith(ending + ending))
                     thisChar = thisChar.substr(0, thisChar.length - 2);
                 else
                     thisChar = thisChar.substr(0, thisChar.length - 1);
             }else {
-                thisChar += l.replace(new RegExp(hardBlank), ' ').substr(0, l.length - 1) + '\n';
+                thisChar += l.replace(new RegExp(escapeRegex(hardBlank)), ' ').substr(0, l.length - 1) + '\n';
             }
             lines = lines.slice(1);
         }
