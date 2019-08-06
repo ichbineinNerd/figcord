@@ -70,7 +70,10 @@ const accessFigFont = function accessFigFont(name, callback) {
         fs.readFile(path.join(process.env.FONTCACHEDIR, crypto.createHash('sha512').update(name2).digest('hex')), (err, data) => {
             if (err)
                 return cb(null, null);
-            return cb(data, null);
+            if (Buffer.isBuffer(data))
+                return cb(data.toString(), null);
+            else
+                return cb(data, null);
         });
     };
     const cacheFigFont = function cacheFigFont(name2, data, cb) {
