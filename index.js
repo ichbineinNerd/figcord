@@ -290,7 +290,7 @@ const processCommand = function processCommand(message) {
             if (e)
                 message.channel.send('unfortunately, an error occured while trying to enlarge your text: ' + e);
             else
-                message.channel.send(splitMessage(figlifyText(arguments.join(' '), parseFigFont(d))).map(m => '```' + m + '```')).forEach(msg => message.channel.send(msg));
+                splitMessage(figlifyText(arguments.join(' '), parseFigFont(d))).map(m => '```' + m + '```').forEach(msg => message.channel.send(msg));
         });
     else if (command === (process.env.FIGLIFY_WITHFONT || 'enlarge-font'))
         accessFigFont(arguments[0], (d, e) => {
