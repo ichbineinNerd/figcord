@@ -245,7 +245,7 @@ const figlifyText = function figlifyText(text, font) {
                     lineLen -= font[text[x]][y].length;
                     break;
                 }
-            
+
                 output += font[text[x]][y];
                 if (y === font.height - 1)
                     charsDone++;
@@ -260,9 +260,25 @@ const figlifyText = function figlifyText(text, font) {
     return output;
 };
 
-const splitMessage = function splitMessaage(message) {
-    return message.match(/[\s\S]{1,1950}/g);
-}
+const splitMessage = function splitMessage(message) {
+    let messages = [];
+    let messageIndex = 0;
+    let lines = message.split('\n');
+
+    messages.push('');
+
+    while (lines.length > 0) {
+        if (messages[messageIndex].length + lines[0].length <= 1990) {
+            messages[messageIndex] += lines[0] + '\n';
+            lines = lines.slice(1);
+        }else {
+            messages[messageIndex] = messages[messageIndex].substr(0, messages[messageIndex].length - 1);
+            messageIndex++;
+            messages.push('');
+        }
+    }
+    return messages;
+};
 
 const processCommand = function processCommand(message) {
     const noPrefix = message.content.substring(process.env.PREFIX.length);
