@@ -287,6 +287,11 @@ const processCommand = function processCommand(message) {
 };
 
 client.on('message', m => {
-    if (m.content.startsWith(process.env.PREFIX))
-        processCommand(m)
+    if (m.content.startsWith(process.env.PREFIX)) {
+        try {
+            processCommand(m)
+        }catch (e) {
+            console.error(e);
+        }
+    }
 });
