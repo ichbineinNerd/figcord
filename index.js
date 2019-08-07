@@ -299,6 +299,13 @@ const processCommand = function processCommand(message) {
             else
                 splitMessage(figlifyText(arguments.slice(1).join(' '), parseFigFont(d))).map(m => '```' + m + '```').forEach(msg => message.channel.send(msg));
         });
+    else if (command === (process.env.FIGFONTSAMPLE === '' ? null : (process.env.FIGFONTSAMPLE || 'sample')))
+        accessFigFont(arguments.join(' '), (d, e) => {
+            if (e)
+                message.channel.send('unfortunately, an error occured while trying to enlarge your text: ' + e);
+            else
+                splitMessage(figlifyText("ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 ._[]{}/-,;<> abcdefghijklmnopqrstuvwxyz", parseFigFont(d))).map(m => '```' + m + '```').forEach(msg => message.channel.send(msg));
+        });
 
 };
 
