@@ -240,13 +240,13 @@ const figlifyText = function figlifyText(text, font) {
     while (charsDone !== text.length) {
         for (let y = 0; y < font.height; y++) {
             for (let x = 0; x < text.length; x++) {
-                lineLen += font[text[x]][y].length;
+                lineLen += font[text[x] || text['default']][y].length;
                 if (lineLen > process.env.FIGGEDTEXTWRAP) {
-                    lineLen -= font[text[x]][y].length;
+                    lineLen -= font[text[x] || text['default']][y].length;
                     break;
                 }
 
-                output += font[text[x]][y];
+                output += font[text[x] || text['default']][y];
                 if (y === font.height - 1)
                     charsDone++;
             }
